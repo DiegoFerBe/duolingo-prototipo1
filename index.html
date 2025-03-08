@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aprende Cultura</title>
+    <style>
+      .status-bar {
+        background: #388e3c;
+        color: white;
+        padding: 5px;
+        font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .phone-frame {
+        width: 360px;
+        height: 640px;
+        background: white;
+        border: 16px solid #4caf50;
+        border-radius: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .app-title {
+        background: #4caf50;
+        color: white;
+        padding: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+      }
+      .content,
+      .quiz-container,
+      .intro-container,
+      .category-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .category-container,
+      .quiz-container {
+        display: none;
+        gap: 10px;
+      }
+      .country-container,
+      .category-selection {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      .option,
+      .country,
+      .category {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .category-special {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+        background: #e67a00;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .option:hover,
+      .country:hover,
+      .category:hover {
+        background: #388e3c;
+      }
+      .correct {
+        background: #2ecc71;
+      }
+      .incorrect {
+        background: #e74c3c;
+      }
+      .feedback {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      .back-button {
+        display: none;
+        margin-top: 20px;
+        padding: 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .home-button {
+        margin-top: 20px;
+        padding: 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="status-bar">
+        <span>📶 12:45</span>
+        <span id="festival-date">🔋 🗓️ 2 de Noviembre</span>
+      </div>
+      <div class="app-title">📚 Aprende Cultura</div>
+      <div class="intro-container" id="intro">
+        <img
+          src="https://design.duolingo.com/7d3b95abf67001cde6ea.svg"
+          alt=""
+        />
+        <h2>¡Felicidades! Alcanzaste el nivel A2 de Español</h2>
+        <p>Has desbloqueado la inmersión cultural. Selecciona un país:</p>
+        <div class="country-container">
+          <button class="country" onclick="selectCountry('Perú')">
+            🇵🇪 Perú
+          </button>
+          <button class="country" onclick="selectCountry('Uruguay')">
+            🇺🇾 Uruguay
+          </button>
+          <button class="country" onclick="selectCountry('México')">
+            🌮 México
+          </button>
+        </div>
+      </div>
+      <div class="category-container" id="categorySelection">
+        <h2 id="selectedCountryTitle"></h2>
+        <p>Selecciona una categoría:</p>
+        <button class="category" onclick="selectCategory('Comida')">
+          🍽️ Comida
+        </button>
+        <button class="category" onclick="selectCategory('Música')">
+          🎵 Música
+        </button>
+        <button class="category" onclick="selectCategory('Monumentos')">
+          🏛️ Monumentos
+        </button>
+        <button
+          class="category-special"
+          id="diaMuertosButton"
+          onclick="selectCategory('Día de Muertos')"
+        >
+          💀 Día de Muertos
+        </button>
+
+        <button class="home-button" onclick="goBackToCountry()">
+          ← Volver a países
+        </button>
+      </div>
+      <div class="quiz-container" id="quizContainer">
+        <h2 id="quizTitle"></h2>
+        <p id="question"></p>
+        <div id="options"></div>
+        <p class="feedback" id="feedback"></p>
+        <p id="completionMessage" style="display: none; font-weight: bold">
+          ¡Felicidades! Completaste el quiz.
+        </p>
+        <button
+          class="back-button"
+          id="backButton"
+          onclick="goBackToCategory()"
+        >
+          Volver al menú
+        </button>
+      </div>
+    </div>
+    <script>
+      let selectedCountry = "";
+      let selectedCategory = "";
+      let currentQuestionIndex = 0;
+
+      const questions = {
+        Perú: {
+          Comida: [
+            {
+              question:
+                "¿Qué plato peruano fue declarado Patrimonio Cultural de la Nación en 2007?",
+              options: ["Lomo saltado", "Ceviche", "Rocoto relleno"],
+              answer: "Ceviche",
+              fact: "¡Correcto! El ceviche peruano es considerado uno de los platos más representativos de América Latina.",
+            },
+            {
+              question: "¿Qué bebida tradicional se prepara con pisco?",
+              options: ["Pisco Sour", "Chicha morada", "Inca Kola"],
+              answer: "Pisco Sour",
+            },
+          ],
+          Música: [
+            {
+              question:
+                "¿Qué instrumento ancestral andino se fabrica con caparazón de armadillo?",
+              options: ["Quena", "Charango", "Zampoña"],
+              answer: "Charango",
+            },
+          ],
+          Monumentos: [
+            {
+              question:
+                "¿Qué ciudadela inca es conocida como 'La Ciudad Perdida'?",
+              options: ["Chan Chan", "Machu Picchu", "Kuelap"],
+              answer: "Machu Picchu",
+              fact: "Machu Picchu fue construido en el siglo XV y redescubierto en 1911 por Hiram Bingham.",
+            },
+          ],
+        },
+        Uruguay: {
+          Comida: [
+            {
+              question:
+                "¿Qué plato típico uruguayo combina carne y vegetales en una plancha?",
+              options: ["Chivito", "Asado", "Choripán"],
+              answer: "Chivito",
+            },
+          ],
+          Música: [
+            {
+              question: "¿Qué famoso carnaval dura 40 días en Uruguay?",
+              options: ["Carnaval de Montevideo", "Llamadas", "Candombe"],
+              answer: "Carnaval de Montevideo",
+              fact: "Es el carnaval más largo del mundo, con desfiles de comparsas y murgas.",
+            },
+          ],
+          Monumentos: [
+            {
+              question:
+                "¿Qué famoso monumento de Montevideo tiene forma de anillo gigante?",
+              options: [
+                "Torre Antel",
+                "Palacio Salvo",
+                "Monumento a La Carreta",
+              ],
+              answer: "Torre Antel",
+            },
+          ],
+        },
+        México: {
+          Comida: [
+            {
+              question:
+                "¿Qué insecto se usa tradicionalmente en la cocina oaxaqueña?",
+              options: ["Chapulines", "Jumiles", "Escamoles"],
+              answer: "Chapulines",
+              fact: "Los chapulines se consumen tostados con ajo, limón y chile desde la época prehispánica.",
+            },
+            {
+              question:
+                "¿Qué ingrediente principal lleva el auténtico mole poblano?",
+              options: ["Cacao", "Chile ancho", "Masa de maíz"],
+              answer: "Chile ancho",
+            },
+          ],
+          "Día de Muertos": [
+            {
+              question: "¿Qué significa colocar fotos en el altar de muertos?",
+              options: [
+                "Recordar a los difuntos",
+                "Ahuyentar espíritus",
+                "Decoración",
+              ],
+              answer: "Recordar a los difuntos",
+              fact: "Las fotos ayudan a guiar a las almas y mantener su memoria viva.",
+            },
+            {
+              question:
+                "¿Qué fruta se coloca en los altares para representar la tierra?",
+              options: ["Naranja", "Guayaba", "Caña"],
+              answer: "Guayaba",
+            },
+          ],
+          Música: [
+            {
+              question: "¿Qué instrumento caracteriza al mariachi tradicional?",
+              options: ["Trompeta", "Guitarrón", "Acordeón"],
+              answer: "Guitarrón",
+              fact: "El guitarrón mexicano tiene 6 cuerdas y un cuerpo más grande que la guitarra normal.",
+            },
+          ],
+          Monumentos: [
+            {
+              question:
+                "¿Qué zona arqueológica maya tiene la pirámide de Kukulkán?",
+              options: ["Teotihuacán", "Chichen Itzá", "Palenque"],
+              answer: "Chichen Itzá",
+            },
+          ],
+        },
+      };
+
+      function selectCountry(country) {
+        selectedCountry = country;
+        document.getElementById("intro").style.display = "none";
+        document.getElementById("categorySelection").style.display = "flex";
+        document.getElementById(
+          "selectedCountryTitle"
+        ).innerText = `Explorando la cultura de ${country}`;
+
+        // Mostrar fecha especial solo para México
+        const dateElement = document.getElementById("festival-date");
+        if (country === "México") {
+          document.getElementById("diaMuertosButton").style.display = "block";
+        } else {
+          dateElement.innerHTML = "🔋";
+          document.getElementById("diaMuertosButton").style.display = "none";
+        }
+      }
+
+      // Mantener otras funciones sin cambios
+      function selectCategory(category) {
+        selectedCategory = category;
+        document.getElementById("categorySelection").style.display = "none";
+        document.getElementById("quizContainer").style.display = "flex";
+        document.getElementById("completionMessage").style.display = "none";
+        document.getElementById("backButton").style.display = "none";
+        currentQuestionIndex = 0;
+        showQuestion();
+      }
+
+      function showQuestion() {
+        let questionList = questions[selectedCountry][selectedCategory];
+        if (currentQuestionIndex < questionList.length) {
+          let questionData = questionList[currentQuestionIndex];
+          document.getElementById("quizTitle").innerText = `Pregunta ${
+            currentQuestionIndex + 1
+          }`;
+          document.getElementById("question").innerText = questionData.question;
+          let optionsContainer = document.getElementById("options");
+          optionsContainer.innerHTML = "";
+          document.getElementById("feedback").innerText = "";
+
+          questionData.options.forEach((option) => {
+            let button = document.createElement("button");
+            button.innerText = option;
+            button.className = "option";
+            button.onclick = () =>
+              checkAnswer(button, option, questionData.answer);
+            optionsContainer.appendChild(button);
+          });
+        } else {
+          document.getElementById("completionMessage").style.display = "block";
+          document.getElementById("backButton").style.display = "block";
+        }
+      }
+
+      function checkAnswer(button, selectedOption, correctAnswer) {
+        let feedback = document.getElementById("feedback");
+        if (selectedOption === correctAnswer) {
+          button.classList.add("correct");
+          feedback.innerText = "✅ ¡Correcto!";
+          setTimeout(() => {
+            currentQuestionIndex++;
+            showQuestion();
+          }, 1000);
+        } else {
+          button.classList.add("incorrect");
+          feedback.innerText = "❌ Incorrecto, intenta otra vez.";
+        }
+      }
+
+      function goBackToCategory() {
+        document.getElementById("quizContainer").style.display = "none";
+        document.getElementById("categorySelection").style.display = "flex";
+      }
+
+      function goBackToCountry() {
+        document.getElementById("categorySelection").style.display = "none";
+        document.getElementById("intro").style.display = "flex";
+        selectedCountry = "";
+        selectedCategory = "";
+        currentQuestionIndex = 0;
+      }
+    </script>
+  </body>
+</html>
