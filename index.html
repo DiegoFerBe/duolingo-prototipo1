@@ -131,6 +131,9 @@
         cursor: pointer;
         font-weight: bold;
       }
+      #festival-date{
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -331,7 +334,14 @@
         ).innerText = `Explorando la cultura de ${country}`;
 
         // Mostrar fecha especial solo para México
-       
+    //     const dateElement = document.getElementById("festival-date");
+    //     if (country === "México") {
+    //       document.getElementById("diaMuertosButton").style.display = "block";
+    //     } else {
+    //       dateElement.innerHTML = "🔋";
+    //       document.getElementById("diaMuertosButton").style.display = "none";
+    //     }
+      }
 
       // Mantener otras funciones sin cambios
       function selectCategory(category) {
